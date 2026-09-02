@@ -4,7 +4,11 @@ pipeline {
         maven "MAVEN3.9.9"
         jdk "JDK17"
     }
-    
+    environment {
+        
+        SONARSCANNER = 'sonarscanner'
+        SONARSERVER = 'sonarserver'
+    }
     stages {
         stage('Build') { 
             steps { 
@@ -29,7 +33,25 @@ pipeline {
                     archiveArtifacts artifacts: '**/target/*.war' 
                 } 
             } 
-        } 
-        
+        }
+        stage('Sonar Code analysis') {
+          environment {
+           scannerHome = tool "${SONARSCANNER}";
+          }
+
+          steps{
+            withSonarQubeEnv("${SONARSERVER}") { 
+              sh '''${scannerHome}/bin/sonar-scanner \
+                  -Dsonar.projectKey=vprofile \
+  				  -Dsonar.projectName=vprofile \
+                  -Dsonar.projectVersion=1.0 \
+                  -Dsonar.sources=src/ \
+                  -Dsonar.java.binaries=target/classes \
+                  -Dsonar.junit.reportsPath=target/surefire-reports \
+                  -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
+                  -Dsonar.java.checkstyle.reportPaths=target/checkstyle-result.xml'''
+            }
+          }
+        }
     }
 }
