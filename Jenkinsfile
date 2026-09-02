@@ -6,28 +6,30 @@ pipeline {
     }
     
     stages {
-        stage('Build'){
-            steps {
-                sh 'mvn -s settings.xml -DskipTests install'
-            }
-            post {
-                success{
-                    echo "Archiving Artifact"
-                    archiveArtifacts artifacts: '**/*.war' 
-                }
-            }
-        }
-        stage('Unit test'){
-            steps {
-                sh 'mvn test'
-            }
-        }
-        stage('Checkstyle Analysis') {
-            steps {
-                sh'mvn checkstyle:checkstyle'
-            }
-        }
-        
+        stage('Build') { 
+            steps { 
+                sh 'mvn clean install -DskipTests' 
+            } 
+            
+        } 
+ 
+        stage('Unit Test') { 
+            steps { 
+                sh 'mvn test' 
+            } 
+            
+        } 
+ 
+        stage('Checkstyle Analysis') { 
+            steps { 
+                sh 'mvn checkstyle:checkstyle' 
+            } 
+            post { 
+                success { 
+                    archiveArtifacts artifacts: '**/target/*.war' 
+                } 
+            } 
+        } 
         
     }
 }
