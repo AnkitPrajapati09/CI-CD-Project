@@ -44,7 +44,7 @@ pipeline {
           }
 
           steps{
-            withSonarQubeEnv("${SONARSERVER}") { 
+            withSonarQubeEnv("${SONARSERVE}") { 
               sh '''${scannerHome}/bin/sonar-scanner \
                   -Dsonar.projectKey=vprofile \
   				  -Dsonar.projectName=vprofile \
@@ -64,6 +64,25 @@ pipeline {
                     // true = set pipeline to UNSTABLE, false = don't
                     waitForQualityGate abortPipeline: true
                 }
+            }
+        }
+        stage("UploadArtifact"){
+            steps{
+                nexusArtifactUploader(
+                  nexusVersion: 'nexus3',
+                  protocol: 'http',
+                  nexusUrl: "${NEXUSIP}:${NEXUSPORT}",
+                  groupId: 'QA',
+                  version: "${env.BUILD_ID}-${env.BUILD_TIMESTAMP}",
+                  repository: "${RELEASE_REPO}",
+                  credentialsId: 'nexuslogin',
+                  artifacts: [
+                    [artifactId: 'vproapp',
+                     classifier: '',
+                     file: 'target/vprofile-v2.war',
+                     type: 'war']
+                  ]
+                )
             }
         }
 
