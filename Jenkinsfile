@@ -17,7 +17,7 @@ pipeline {
 		NEXUS_REPO = 'vpro-maven-group'
         registryCredential = 'ecr:us-east-1:awscreds'
         appRegistry = '776648109966.dkr.ecr.us-east-1.amazonaws.com/vprofile-app-img-repo'
-        
+        vprofileRegistry = "https://776648109966.dkr.ecr.us-east-1.amazonaws.com"
     }
     stages {
         stage('Build') { 
@@ -98,6 +98,16 @@ pipeline {
     
                 }
             }
+        }
+        stage('Upload App Image') {
+          steps{
+            script {
+              docker.withRegistry( vprofileRegistry, registryCredential ) {
+                dockerImage.push("$BUILD_NUMBER")
+                dockerImage.push('latest')
+              }
+            }
+          }
         }
 
     }
