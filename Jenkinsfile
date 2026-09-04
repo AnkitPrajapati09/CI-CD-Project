@@ -12,6 +12,9 @@ pipeline {
         
         SONARSCANNER = 'sonarscanner'
         SONARSERVER = 'sonarserver'
+        NEXUSIP = '172.31.33.34'
+		NEXUSPORT = '8081'
+		NEXUS_REPO = 'vpro-maven-group'
     }
     stages {
         stage('Build') { 
@@ -74,7 +77,7 @@ pipeline {
                   nexusUrl: "${NEXUSIP}:${NEXUSPORT}",
                   groupId: 'QA',
                   version: "${env.BUILD_ID}-${env.BUILD_TIMESTAMP}",
-                  repository: "${RELEASE_REPO}",
+                  repository: "${NEXUS_REPO}",
                   credentialsId: 'nexuslogin',
                   artifacts: [
                     [artifactId: 'vproapp',
