@@ -15,6 +15,9 @@ pipeline {
         NEXUSIP = '172.31.33.34'
 		NEXUSPORT = '8081'
 		NEXUS_REPO = 'vpro-maven-group'
+        registryCredential = 'ecr:us-east-1:awscreds'
+        appRegistry = '776648109966.dkr.ecr.us-east-1.amazonaws.com/vprofile-app-img-repo'
+        
     }
     stages {
         stage('Build') { 
@@ -86,6 +89,14 @@ pipeline {
                      type: 'war']
                   ]
                 )
+            }
+        }
+        stage('Build App Image') {
+            steps {
+                script {
+                    dockerImage = docker.build( appRegistry + ":$BUILD_NUMBER", "./Docker-files/app/multistage/")
+    
+                }
             }
         }
 
