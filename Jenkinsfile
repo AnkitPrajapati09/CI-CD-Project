@@ -20,6 +20,7 @@ pipeline {
         vprofileRegistry = "https://776648109966.dkr.ecr.us-east-1.amazonaws.com"
         cluster = "vproappstaging"
         service = "vproapptask-service-staging"
+        TASK_FAMILY = 'vproapptask'
     }
     stages {
         stage('Build') { 
