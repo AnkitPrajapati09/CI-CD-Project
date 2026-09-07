@@ -16,7 +16,7 @@ pipeline {
 		NEXUSPORT = '8081'
 		NEXUS_REPO = 'vprofile-repo'
         registryCredential = 'ecr:us-east-1:awscreds'
-        appRegistry = '776648109966.dkr.ecr.us-east-1.amazonaws.com/vprofile-app-img-repo'
+        appRegistry = '776648109966.dkr.ecr.us-east-1.amazonaws.com/vprofile-app-img-new'
         vprofileRegistry = "https://776648109966.dkr.ecr.us-east-1.amazonaws.com"
         cluster = "vproappstaging"
         service = "vproapptask-service-staging"
