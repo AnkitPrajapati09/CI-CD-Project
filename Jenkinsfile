@@ -145,6 +145,15 @@ pipeline {
                 }
             }
         }
+        stage('Verify Deployment') { 
+            steps { 
+                withAWS(credentials: 'awscreds', region: 'us-east-1') { 
+                    sh """ 
+                    aws ecs wait services-stable --cluster ${cluster} --services ${service} 
+                    """ 
+                } 
+            } 
+        }
 
     }
     post { 
