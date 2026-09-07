@@ -14,7 +14,7 @@ pipeline {
         SONARSERVER = 'sonarserver'
         NEXUSIP = '172.31.33.34'
 		NEXUSPORT = '8081'
-		NEXUS_REPO = 'vpro-maven-group'
+		NEXUS_REPO = 'vprofile-repo'
         registryCredential = 'ecr:us-east-1:awscreds'
         appRegistry = '776648109966.dkr.ecr.us-east-1.amazonaws.com/vprofile-app-img-repo'
         vprofileRegistry = "https://776648109966.dkr.ecr.us-east-1.amazonaws.com"
