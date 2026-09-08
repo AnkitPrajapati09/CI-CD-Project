@@ -2,6 +2,7 @@
 # Automated End-to-End Java CI/CD Pipeline
 
 A production-simulated, enterprise-grade CI/CD pipeline built to automate the integration, security scanning, artifact management, and cloud deployment of a Java web application. This architecture bridges continuous development with fully automated application deployment and container orchestration.
+
 ### Architecture diagram
 
 ```text
@@ -131,7 +132,7 @@ Log into your AWS Console (`us-east-1` region) and prepare these items before st
 
 The automation workflow processes the application across the following sequential phases:
 
-* **Build & Unit Test:** Compiles the application via Maven using custom `settings.xml` configurations and runs standard test suites.
+* **Build & Unit Test:** Compiles the application via Maven and runs standard test suites.
 * **Code Inspections:** Runs Checkstyle validation and sends deep analysis metrics directly to the `sonarserver`.
 * **Quality Gate Check:** Blocks the pipeline for up to 1 hour if the code coverage or quality metrics fail the predefined SonarQube safety limits.
 * **Artifact Upload:** Packs the build into a standard Java Web Archive (`vprofile-v2.war`) and uploads it to the `vprofile-release` repository inside Nexus.
