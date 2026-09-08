@@ -35,7 +35,7 @@ A production-simulated, enterprise-grade CI/CD pipeline built to automate the in
                                          │  AWS ECR  │
                                          └─────┬─────┘
                                                │
-                                               ▼ (Update via jq)
+                                               ▼ (Update via aws-cli)
          ┌───────────┐                   ┌───────────┐
          │   Slack   │ ◄──────────────── │  AWS ECS  │
          │ (Alerts)  │  (Status Update)  │ (Deploy)  │
