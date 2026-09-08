@@ -102,6 +102,27 @@ pipeline {
                 }
             }
         }
+        stage('Trivy Scan') {
+            steps {
+                sh """
+                mkdir -p /var/lib/jenkins/trivy-tmp
+                export TMPDIR=/var/lib/jenkins/trivy-tmp
+
+                trivy image \
+                --cache-dir /var/lib/jenkins/.cache/trivy \
+                --severity HIGH,CRITICAL \
+                --exit-code 0 \
+                -f table \
+                -o trivy-report.json \
+                ${appRegistry}:${BUILD_NUMBER}
+                 """
+            }
+            post {
+                always {
+                    archiveArtifacts artifacts: 'trivy-report.json', allowEmptyArchive: true
+                }
+            }
+        }
         stage('Upload App Image to ECR') {
           steps{
             script {
