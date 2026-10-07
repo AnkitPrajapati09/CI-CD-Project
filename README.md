@@ -1,5 +1,5 @@
 
-# Automated End-to-End Java CI/CD Pipeline
+# Enterprise CI/CD Automation Platform
 
 A production-simulated, enterprise-grade CI/CD pipeline built to automate the integration, security scanning, artifact management, and cloud deployment of a Java web application. This architecture bridges continuous development with fully automated application deployment and container orchestration.
 
