@@ -16,12 +16,17 @@ pipeline {
         }
 
         stage('Terraform Init') {
-            steps {
-                dir('terraform') {
-                    sh 'terraform init'
-                }
+    steps {
+        withAWS(
+            credentials: 'awscreds',
+            region: 'us-east-1'
+        ) {
+            dir('terraform') {
+                sh 'terraform init'
             }
         }
+    }
+}
 
         stage('Terraform Format Check') {
             steps {
