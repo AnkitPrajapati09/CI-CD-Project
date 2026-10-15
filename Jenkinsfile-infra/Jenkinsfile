@@ -17,10 +17,7 @@ pipeline {
 
         stage('Terraform Init') {
     steps {
-        withAWS(
-            credentials: 'awscreds',
-            region: 'us-east-1'
-        ) {
+        withAWS(credentials: 'awscreds', region: 'us-east-1'){
             dir('terraform') {
                 sh 'terraform init'
             }
