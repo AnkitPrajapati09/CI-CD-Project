@@ -1,0 +1,78 @@
+pipeline {
+    agent any
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Terraform Version') {
+            steps {
+                sh 'terraform version'
+            }
+        }
+
+        stage('Debug AWS Credentials') {
+            steps {
+                withAWS(credentials: 'awscreds', region: 'us-east-1') {
+                    sh 'aws sts get-caller-identity'
+                }
+            }
+        }
+
+        stage('Terraform Init') {
+            steps {
+                withAWS(credentials: 'awscreds', region: 'us-east-1') {
+                    dir('terraform') {
+                        sh 'terraform init'
+                    }
+                }
+            }
+        }
+
+        stage('Terraform Format Check') {
+            steps {
+                dir('terraform') {
+                    sh 'terraform fmt -check'
+                }
+            }
+        }
+
+        stage('Terraform Validate') {
+            steps {
+                dir('terraform') {
+                    sh 'terraform validate'
+                }
+            }
+        }
+
+        stage('Destroy Plan') {
+            steps {
+                withAWS(credentials: 'awscreds', region: 'us-east-1') {
+                    dir('terraform') {
+                        sh 'terraform plan -destroy -out=destroy.tfplan'
+                    }
+                }
+            }
+        }
+
+        stage('Approval') {
+            steps {
+                input message: 'Destroy Infrastructure?'
+            }
+        }
+
+        stage('Destroy') {
+            steps {
+                withAWS(credentials: 'awscreds', region: 'us-east-1') {
+                    dir('terraform') {
+                        sh 'terraform apply -auto-approve destroy.tfplan'
+                    }
+                }
+            }
+        }
+    }
+}

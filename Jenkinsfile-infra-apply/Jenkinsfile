@@ -1,0 +1,78 @@
+pipeline {
+    agent any
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Terraform Version') {
+            steps {
+                sh 'terraform version'
+            }
+        }
+
+        stage('Terraform Init') {
+    steps {
+        withAWS(credentials: 'awscreds', region: 'us-east-1'){
+            dir('terraform') {
+                sh 'terraform init'
+            }
+        }
+    }
+}
+
+        stage('Terraform Format Check') {
+            steps {
+                dir('terraform') {
+                    sh 'terraform fmt -check'
+                }
+            }
+        }
+
+        stage('Terraform Validate') {
+            steps {
+                dir('terraform') {
+                    sh 'terraform validate'
+                }
+            }
+        }
+
+        stage('Terraform Plan') {
+            steps {
+                withAWS(
+                    credentials: 'awscreds',
+                    region: 'us-east-1'
+                ) {
+                    dir('terraform') {
+                        sh '''
+                        terraform plan \
+                        -out=tfplan
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage('Terraform Apply') {
+            steps {
+                input message: 'Apply Terraform Changes?'
+
+                withAWS(
+                    credentials: 'awscreds',
+                    region: 'us-east-1'
+                ) {
+                    dir('terraform') {
+                        sh '''
+                        terraform apply \
+                        -auto-approve tfplan
+                        '''
+                    }
+                }
+            }
+        }
+    }
+}
