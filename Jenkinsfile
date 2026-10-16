@@ -151,48 +151,30 @@ pipeline {
                 }
             }
         }
-        stage('Deploy to ecs') {
+        stage('Deploy To EKS') {
             steps {
                 withAWS(credentials: 'awscreds', region: 'us-east-1') {
-                    script {
-                        env.TASK_DEF_ARN = sh(
-                            script: """
-                            IMAGE_URI=${appRegistry}:${BUILD_NUMBER}
-                            aws ecs describe-task-definition --task-definition ${TASK_FAMILY} --query taskDefinition > task-def.json
-                            jq 'del(
-                            .taskDefinitionArn,
-                            .revision,
-                            .status,
-                            .requiresAttributes,
-                            .compatibilities,
-                            .registeredAt,
-                            .registeredBy
-                            )' task-def.json > task-def-clean.json
-                            jq --arg IMAGE "\$IMAGE_URI" '.containerDefinitions[0].image=\$IMAGE' task-def-clean.json > task-def-new.json
-                            aws ecs register-task-definition --cli-input-json file://task-def-new.json --query "taskDefinition.taskDefinitionArn" --output text
-                            """,
-                            returnStdout: true
-                            ).trim()
+                    sh """
+                    aws eks update-kubeconfig \
+                    --region us-east-1 \
+                    --name vprofile-eks
 
-                            echo "New Revision: ${env.TASK_DEF_ARN}"
-                            sh """
-                            aws ecs update-service --cluster ${cluster} --service ${service} --task-definition ${TASK_DEF_ARN}
-                            """
-                            sh """
-                            aws ecs wait services-stable --cluster ${cluster} --services ${service}
-                            """
-                        }
+                    kubectl apply -f k8s/s
+
+                    # Update App Image
+                    kubectl set image deployment/vprofile \
+                    vprofile=${appRegistry}:${BUILD_NUMBER}
+
+                    # Update DB Image
+                    kubectl set image deployment/vprodb \
+                    vprodb=${dbRegistry}:${BUILD_NUMBER}
+
+                    # Wait for rollouts
+                    kubectl rollout status deployment/vprofile
+                    kubectl rollout status deployment/vprodb
+                    """
                 }
             }
-        }
-        stage('Verify Deployment') { 
-            steps { 
-                withAWS(credentials: 'awscreds', region: 'us-east-1') { 
-                    sh """ 
-                    aws ecs wait services-stable --cluster ${cluster} --services ${service} 
-                    """ 
-                } 
-            } 
         }
 
     }
