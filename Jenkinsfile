@@ -115,7 +115,8 @@ pipeline {
                 sh """
                 mkdir -p /var/lib/jenkins/trivy-tmp
                 export TMPDIR=/var/lib/jenkins/trivy-tmp
-
+                
+                echo "Scanning APP Image..."
                 trivy image \
                 --cache-dir /var/lib/jenkins/.cache/trivy \
                 --severity HIGH,CRITICAL \
@@ -124,10 +125,23 @@ pipeline {
                 -o trivy-report.json \
                 ${appRegistry}:${BUILD_NUMBER}
                  """
+                sh """
+                mkdir -p /var/lib/jenkins/trivy-tmp
+                export TMPDIR=/var/lib/jenkins/trivy-tmp
+
+                echo "Scanning DB Image..."
+                trivy image \
+                --cache-dir /var/lib/jenkins/.cache/trivy \
+                --severity HIGH,CRITICAL \
+                --exit-code 0 \
+                -f table \
+                -o trivy-db-report.json \
+                ${dbRegistry}:${BUILD_NUMBER}
+                """
             }
             post {
                 always {
-                    archiveArtifacts artifacts: 'trivy-report.json', allowEmptyArchive: true
+                    archiveArtifacts artifacts: 'trivy-*-report.json', allowEmptyArchive: true
                 }
             }
         }
