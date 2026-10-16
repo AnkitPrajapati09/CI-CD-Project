@@ -178,7 +178,7 @@ pipeline {
                     --region us-east-1 \
                     --name vprofile-eks
 
-                    kubectl apply -f k8s/s
+                    kubectl apply -f k8s/
 
                     # Update App Image
                     kubectl set image deployment/vprofile \
