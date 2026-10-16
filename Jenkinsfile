@@ -18,9 +18,7 @@ pipeline {
         registryCredential = 'ecr:us-east-1:awscreds'
         appRegistry = '776648109966.dkr.ecr.us-east-1.amazonaws.com/vprofile-app-img-new'
         vprofileRegistry = "https://776648109966.dkr.ecr.us-east-1.amazonaws.com"
-        cluster = "vproappstaging"
-        service = "vproapptask-service-staging"
-        TASK_FAMILY = 'vproapptask'
+        dbRegistry = '776648109966.dkr.ecr.us-east-1.amazonaws.com/vprofile-db-image-repo'
     }
     stages {
         stage('Build') { 
@@ -99,6 +97,16 @@ pipeline {
                 script {
                     dockerImage = docker.build( appRegistry + ":$BUILD_NUMBER", "-f Docker-files/app/multistage/Dockerfile .")
     
+                }
+            }
+        }
+        stage('Build DB Image') {
+            steps {
+                script {
+                    docker_dbImage = docker.build(
+                        dbRegistry + ":${BUILD_NUMBER}",
+                        "-f Docker-files/db/Dockerfile ."
+                    )
                 }
             }
         }
