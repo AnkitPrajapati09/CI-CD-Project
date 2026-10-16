@@ -21,6 +21,11 @@ pipeline {
         dbRegistry = '776648109966.dkr.ecr.us-east-1.amazonaws.com/vprofile-db-image-repo'
     }
     stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
         stage('Build') { 
             steps { 
                 sh 'mvn clean install -DskipTests' 
