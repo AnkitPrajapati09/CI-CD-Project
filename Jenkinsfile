@@ -141,6 +141,16 @@ pipeline {
             }
           }
         }
+        stage('Upload DB Image to ECR') {
+            steps {
+                script {
+                    docker.withRegistry(vprofileRegistry, registryCredential) {
+                        docker_dbImage.push("${BUILD_NUMBER}")
+                        docker_dbImage.push('latest')
+                    }
+                }
+            }
+        }
         stage('Deploy to ecs') {
             steps {
                 withAWS(credentials: 'awscreds', region: 'us-east-1') {
