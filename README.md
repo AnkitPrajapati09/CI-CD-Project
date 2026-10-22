@@ -1,155 +1,405 @@
-# Enterprise CI/CD Automation Platform
+# Enterprise DevSecOps CI/CD & Infrastructure Automation Platform
 
-A production-simulated, enterprise-grade CI/CD pipeline built to automate the integration, security scanning, artifact management, and cloud deployment of a Java web application. This architecture bridges continuous development with fully automated application deployment and container orchestration.
+A production-style end-to-end DevSecOps project that automates infrastructure provisioning, application build, code quality analysis, artifact management, container security scanning, and Kubernetes deployment on Amazon EKS.
 
-### Architecture diagram
+This solution leverages Terraform, Jenkins, Maven, SonarQube, Nexus Repository, Docker, Trivy, Amazon ECR, and Amazon EKS to provide a complete CI/CD and Infrastructure-as-Code (IaC) workflow from source code commit to Kubernetes deployment.
+
+---
+
+## 🚀 Project Overview
+
+### Key Features
+
+- Automated AWS infrastructure provisioning using Terraform
+- End-to-end CI/CD pipeline using Jenkins Declarative Pipeline
+- Maven-based application build and unit testing
+- Static code analysis using Checkstyle and SonarQube
+- SonarQube Quality Gate enforcement
+- Artifact versioning and storage using Nexus Repository
+- Multi-stage Docker image creation and optimization
+- Container vulnerability scanning using Trivy
+- Secure image publishing to Amazon ECR
+- Automated Kubernetes deployments to Amazon EKS
+- Rolling updates with rollout verification
+- Slack notifications for pipeline visibility
+- Troubleshooting and operational support for Jenkins, Kubernetes, and AWS services
+
+---
+
+# 🏗️ Architecture Diagram
 
 ```text
-           [ Developer ]
-                 │
-                 ▼ (Pushes Code)
-         ┌───────────────┐
-         │    GitHub     │ ──────────┐ (Webhook)
-         └───────────────┘           │
-                                     ▼
-         ┌──────────────────────────────────────────────┐
-         │                 Jenkins CI                   │
-         └──────┬──────────────┬──────────────┬─────────┘
-                │              │              │
-                ▼              ▼              ▼
-         ┌───────────┐   ┌───────────┐   ┌───────────┐
-         │SonarQube  │   │   Nexus   │   │  Docker   │
-         │(Quality   │   │(Artifact  │   │(Container │
-         │ Gates)    │   │  Storage) │   │  Build)   │
-         └───────────┘   └───────────┘   └─────┬─────┘
-                                               │
-                                               ▼
-                                         ┌───────────┐
-                                         │   Trivy   │
-                                         │(Security  │
-                                         │  Scan)    │
-                                         └─────┬─────┘
-                                               │
-                                               ▼ (Validated Image)
-                                         ┌───────────┐
-                                         │  AWS ECR  │
-                                         └─────┬─────┘
-                                               │
-                                               ▼ (Update via aws-cli)
-         ┌───────────┐                   ┌───────────┐
-         │   Slack   │ ◄──────────────── │  AWS ECS  │
-         │ (Alerts)  │  (Status Update)  │ (Deploy)  │
-         └───────────┘                   └───────────┘
+                          +----------------+
+                          |   Developer    |
+                          +----------------+
+                                  |
+                                  | Git Push
+                                  v
+
+                          +---------------+
+                          |    GitHub     |
+                          +---------------+
+                                  |
+                               Webhook
+                                  |
+                                  v
+
+                    +---------------------------+
+                    |     Jenkins Pipeline      |
+                    +---------------------------+
+                                  |
+         ----------------------------------------------------
+         |                  |                 |             |
+         v                  v                 v             v
+
+    +---------+      +------------+     +--------+    +---------+
+    | Maven   | ---> | Checkstyle | --> | Sonar  | -> | Nexus   |
+    | Build   |      | Analysis   |     | Qube   |    | Repo    |
+    +---------+      +------------+     +--------+    +---------+
+                                                         |
+                                                         v
+                                                  +-------------+
+                                                  |   Docker    |
+                                                  | Multi-Stage |
+                                                  |    Build    |
+                                                  +-------------+
+                                                         |
+                                                         v
+                                                  +-------------+
+                                                  |    Trivy    |
+                                                  | Security    |
+                                                  |   Scan      |
+                                                  +-------------+
+                                                         |
+                                                         v
+                                                  +-------------+
+                                                  | Amazon ECR  |
+                                                  +-------------+
+                                                         |
+                                                         v
+                                                  +-------------+
+                                                  | Amazon EKS  |
+                                                  | Kubernetes  |
+                                                  |   Cluster   |
+                                                  +-------------+
+                                                         |
+                                                         v
+                                                  +-------------+
+                                                  | Rolling     |
+                                                  | Deployment  |
+                                                  +-------------+
+
+                                                          |
+                                                          v
+
+                                               +------------------+
+                                               | Slack Alerts     |
+                                               +------------------+
 ```
 
+---
 
+# ☁️ Infrastructure Provisioned with Terraform
 
+The complete AWS infrastructure is provisioned using Terraform following Infrastructure-as-Code (IaC) principles.
 
-### The 8-Step Execution Loop
-1. **Source Control:** Developer pushes code to GitHub, triggering an automated webhook.
-2. **Build Automation:** Jenkins polls the repository and compiles the Java application using Maven.
-3. **Static Code Analysis:** Checkstyle and SonarQube evaluate code formatting, code quality gates, and bugs.
-4. **Artifact Storage:** Compiled build packages (`vprofile-v2.war`) are version-controlled and uploaded to Nexus Repository Manager.
-5. **Containerization:** A multi-stage Docker build packages the runtime environment efficiently.
-6. **Security Auditing:** Trivy scans the container image layers for known CVE vulnerabilities before push.
-7. **Cloud Deployment:** Pushes validated images to Amazon ECR and updates Amazon ECS task definitions/services via the AWS CLI.
-8. **Feedback Loop:** Real-time build, test, and deployment statuses are forwarded to a dedicated Slack channel.
+## Resources Created
 
-### Tech Stack & Lab Infrastructure
-* **CI/CD Orchestration:** Jenkins
-* **Cloud Infrastructure:** AWS (ECS, ECR, EC2, IAM)
-* **Containerization:** Docker
-* **Code Quality & Testing:** SonarQube, Maven, Checkstyle
-* **Artifact Management:** Nexus Repository Manager
-* **Security & Compliance:** Trivy
-* **Alerts:** Slack Notifications
+```text
+Terraform
+│
+├── VPC
+├── Public Subnets
+├── Private Subnets
+├── Internet Gateway
+├── NAT Gateway
+├── Route Tables
+├── Security Groups
+├── IAM Roles & Policies
+├── Amazon ECR Repository
+├── Amazon EKS Cluster
+└── EKS Managed Node Groups
+```
+
+### Benefits
+
+- Repeatable Infrastructure Deployment
+- Version Controlled Infrastructure
+- Reduced Manual Configuration
+- Faster Environment Provisioning
+- Scalable Cloud Architecture
 
 ---
 
-## 🛠️ 2. Infrastructure Setup (3 Linux Servers)
+# ⚙️ CI/CD Pipeline Workflow
 
-To eliminate performance cross-interference and simulate a real-world enterprise environment, the infrastructure is split across three distinct Linux instances.
+## 1. Source Control
 
-| Server | Purpose | Core Requirements & Software Installed |
-| :--- | :--- | :--- |
-| **Server 1** | **Jenkins Build Machine** | Java (JDK 17 or 21), Maven 3.9.9, Docker Engine, Trivy Scanner, AWS CLI, `jq` |
-| **Server 2** | **SonarQube Server** | Automated deployment via user data script (`userdata/sonar-setup.sh`) |
-| **Server 3** | **Nexus Repository** | Automated deployment via user data script (`userdata/nexus-setup.sh`) |
+- Developers push code to GitHub.
+- GitHub Webhooks automatically trigger the Jenkins pipeline.
 
-*Note: Access to administrative UI consoles is managed via the public IP addresses of their respective instances using specific security group ports.*
+## 2. Build & Unit Testing
+
+- Source code checkout from GitHub.
+- Maven build execution.
+- Automated unit testing.
+
+## 3. Static Code Analysis
+
+- Checkstyle validates coding standards.
+- SonarQube performs code quality analysis.
+- Code smells, bugs, vulnerabilities, and coverage metrics are evaluated.
+
+## 4. Quality Gate Validation
+
+- Jenkins waits for SonarQube Quality Gate results.
+- Build execution stops if quality thresholds are not met.
+
+## 5. Artifact Management
+
+- WAR artifacts are generated.
+- Artifacts are uploaded to Nexus Repository Manager.
+- Artifact versions are preserved for traceability.
+
+## 6. Containerization
+
+- Multi-stage Docker images are built.
+- Application runtime is separated from build dependencies.
+- Image size and attack surface are minimized.
+
+## 7. Security Scanning
+
+- Trivy scans Docker images.
+- HIGH and CRITICAL vulnerabilities are detected.
+- Vulnerable images are blocked from deployment.
+
+## 8. Container Registry
+
+- Docker images are tagged using Jenkins Build Numbers.
+- Images are published to Amazon ECR.
+
+Example:
+
+```bash
+vprofile:latest
+vprofile:${BUILD_NUMBER}
+```
+
+## 9. Kubernetes Deployment
+
+The latest container image is deployed to Amazon EKS.
+
+Example:
+
+```bash
+kubectl set image deployment/vprofile \
+vprofile=<ECR_IMAGE_URI>:${BUILD_NUMBER}
+```
+
+Deployment activities include:
+
+- Image update
+- Replica replacement
+- Rolling updates
+- Deployment verification
+
+## 10. Rollout Verification
+
+Deployment health is validated before pipeline completion.
+
+```bash
+kubectl rollout status deployment/vprofile
+```
+
+## 11. Notifications
+
+Slack notifications provide:
+
+- Build Status
+- Deployment Status
+- Failed Stage Alerts
+- Pipeline Completion Notifications
 
 ---
 
-## ⚙️ 3. Jenkins Server Configuration
+# 🛠️ Technology Stack
 
-Once your Jenkins Linux server is running, the following plugins and credentials must be configured to establish connectivity with external APIs and services.
+## CI/CD
 
-### 🔹 Required Plugins
-Navigate to **Manage Jenkins** ➡️ **Plugins** ➡️ **Available Plugins** and install:
-* **Git** & **GitHub Integration** (To fetch source code repositories)
-* **Maven Integration** & **Pipeline Maven Integration** (To compile Java applications)
-* **SonarQube Scanner** (To analyze code quality and enforce quality gates)
-* **Nexus Artifact Uploader** (To publish builds to Nexus)
-* **Docker Pipeline** (To build, tag, and push container images)
-* **Slack Notification** (To send real-time operational alerts)
-* **Pipeline: AWS Steps** (Required for the `withAWS` block to handle secure ECS deployments)
+- Jenkins
+- GitHub Webhooks
 
-### 🔹 Required Credentials
-Navigate to **Manage Jenkins** ➡️ **Credentials** ➡️ **System** ➡️ **Global credentials** and register these exact IDs:
-* `gitcreds` ➡️ Username and Password/Token for GitHub
-* `sonacreds` ➡️ Secret text token generated from your SonarQube profile
-* `nexuscreds` ➡️ Admin username and password for Nexus Repository Manager
-* `slackcreds` ➡️ Integration secret token generated from Slack
-* `awscreds` ➡️ AWS Access Key ID and Secret Access Key with appropriate IAM policies for ECR/ECS
+## Build & Testing
 
----
+- Maven
+- JUnit
 
-## ☁️ 4. AWS Cloud Infrastructure (Manual Provisioning)
+## Code Quality
 
-Before executing the pipeline, log into your AWS Console and manually configure the following target deployment platform resources:
+- SonarQube
+- Sonar Quality Gates
+- Checkstyle
 
-1. **Amazon ECR:** Create a private registry repository to securely host your application's compiled Docker images.
-2. **Amazon ECS Setup:**
-   * **ECS Cluster:** Create a logical grouping for your containerized tasks.
-   * **ECS Task Definition:** Blueprint specifying the ECR image path, environment variables, CPU, and Memory limits.
-   * **ECS Service:** Configured to run and auto-scale instances of your task definition safely inside the cluster using a rolling update strategy.
+## Artifact Management
 
----
-Example: 
+- Nexus Repository Manager
 
-Log into your AWS Console (`us-east-1` region) and prepare these items before starting the pipeline:
+## Containerization
 
-1. **Amazon ECR:** Create a private registry named `vprofile-app-img-repo` (Full path: `://amazonaws.com`).
-2. **Amazon ECS Setup:**
-   * Create an **ECS Cluster** named `vproappstaging`.
-   * Create an **ECS Task Definition** named `vproapptask`.
-   * Create an **ECS Service** named `vproapptask-service-staging` inside your cluster.
+- Docker
+- Multi-Stage Docker Builds
 
----
+## Security
 
-## 📋 5. Pipeline Stages Walkthrough
+- Trivy
 
-The automation workflow processes the application across the following sequential phases:
+## Cloud Platform
 
-* **Build & Unit Test:** Compiles the application via Maven and runs standard test suites.
-* **Code Inspections:** Runs Checkstyle validation and sends deep analysis metrics directly to the `sonarserver`.
-* **Quality Gate Check:** Blocks the pipeline for up to 1 hour if the code coverage or quality metrics fail the predefined SonarQube safety limits.
-* **Artifact Upload:** Packs the build into a standard Java Web Archive (`vprofile-v2.war`) and uploads it to the `vprofile-release` repository inside Nexus.
-* **Container Security & Build:** Builds a container image via a multi-stage Dockerfile and parses it using `Trivy` to block deployments containing `HIGH` or `CRITICAL` vulnerabilities.
-* **ECR Registry Upload:** Signs in securely using your `awscreds` profile and pushes image tags (`latest` and the dynamic `$BUILD_NUMBER`) to Amazon ECR.
-* **ECS Rolling Deployment:** Dynamically extracts the active task configuration schema, modifies the image parameter target pointing to the newest ECR payload using `jq`, registers a fresh revision, triggers an update to the ECS service, and monitors cluster health until deployment is successful.
+- AWS EC2
+- Amazon ECR
+- Amazon EKS
+- IAM
+
+## Infrastructure as Code
+
+- Terraform
+
+## Container Orchestration
+
+- Kubernetes
+
+## Notifications
+
+- Slack
 
 ---
 
-## 💡 6. Key Implementation Highlights
+# 📋 Jenkins Pipeline Stages
 
-### 🐳 Multi-Stage Docker Optimization
-Leveraged multi-stage Docker builds to dramatically reduce final deployment footprints. By separating the Maven build dependency workspace from the lightweight runtime container, the final image size was stripped down to the bare essentials. This design choice minimizes the infrastructure resource overhead and heavily reduces the image's security attack surface area.
+```
+Git Checkout
+      │
+      ▼
+Maven Build
+      │
+      ▼
+Unit Testing
+      │
+      ▼
+Checkstyle Analysis
+      │
+      ▼
+SonarQube Analysis
+      │
+      ▼
+Quality Gate Validation
+      │
+      ▼
+Artifact Upload to Nexus
+      │
+      ▼
+Docker Image Build
+      │
+      ▼
+Trivy Security Scan
+      │
+      ▼
+Push Image to Amazon ECR
+      │
+      ▼
+Deploy to Amazon EKS
+      │
+      ▼
+Rollout Verification
+      │
+      ▼
+Slack Notification
+```
 
-### 🛡️ Continuous Security & Quality Gates
-Enforced automated guardrails inside the execution flow. The pipeline is architected to immediately fail the build stage if SonarQube quality gate thresholds are breached or if Trivy detects critical vulnerability exposures in system layers. This ensures zero bad code or insecure containers reach production.
+---
 
-### 💬 Real-Time Slack Feedback Loop
-Automated build status updates are dispatched at the conclusion of every execution loop:
-* **Target Slack Channel:** `#devopscicd`
-* **Alert Format:** Dispatches color-coded statuses (**Green** for `SUCCESS`, **Red** for `FAILURE`) embedded with active links pointing straight back to your Jenkins run console.
+# 💡 Key Implementation Highlights
+
+## Infrastructure Automation
+
+- Automated AWS infrastructure provisioning using Terraform.
+- Provisioned networking, security, IAM, and Amazon EKS resources.
+- Implemented Infrastructure-as-Code best practices.
+
+## DevSecOps Implementation
+
+- Integrated SonarQube Quality Gates.
+- Implemented Checkstyle validation.
+- Enforced Trivy vulnerability scanning.
+- Prevented vulnerable images from reaching deployment environments.
+
+## Kubernetes Automation
+
+- Automated deployments to Amazon EKS.
+- Implemented rolling updates for zero downtime.
+- Verified deployment health using rollout status checks.
+- Automated image versioning using Jenkins Build Numbers.
+
+## Container Optimization
+
+- Built optimized multi-stage Docker images.
+- Reduced container image size.
+- Improved deployment efficiency and security posture.
+
+## Monitoring & Notifications
+
+- Integrated Slack notifications.
+- Real-time build and deployment visibility.
+- Faster incident response and troubleshooting.
+
+---
+
+# 🔧 Troubleshooting & Operational Experience
+
+## Jenkins
+
+- Maven dependency resolution failures
+- SonarQube authentication issues
+- Nexus artifact upload failures
+- Docker build failures
+- AWS integration issues
+- Credential management issues
+
+## Kubernetes
+
+- ImagePullBackOff
+- CrashLoopBackOff
+- Pod Scheduling Failures
+- Service Discovery Issues
+- Deployment Rollout Failures
+- EKS Authentication Issues
+
+
+## AWS
+
+- ECR Authentication Problems
+- IAM Permission Errors
+- EKS Access Management
+- Terraform Backend Configuration Issues
+- Terraform State Management Problems
+
+---
+
+# 📚 Key Learning Outcomes
+
+- Infrastructure as Code (Terraform)
+- Jenkins Pipeline Development
+- DevSecOps Best Practices
+- Kubernetes Administration
+- Amazon EKS Operations
+- Container Security
+- Docker Image Optimization
+- CI/CD Automation
+- AWS Cloud Infrastructure
+- Production-Style Deployment Workflows
+
+---
+
+
+
+
